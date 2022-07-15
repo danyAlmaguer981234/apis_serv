@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css" />
+
+    <script type="text/javascript">
+
+        $(document).ajaxStart(function () {
+            $('#loading').show();
+
+        }).ajaxStop(function () {
+            $('#loading').hide();
+
+            $('#tableArt').DataTable();
+        });
+
+        $(document).ready(function () {
+            $("#tableArt").css("display", "none");
+        });
+
+
+        $.ajax({
+            type: "GET",
+            url: "http://10.44.1.68:8000/api/task",
+            async: true,
+            dataType: "json",
+        }).done(
+            function (articulos, textStatus, jqXHR ) {
+                $('#tableArt').show();
+                var str = '';
+                for (var i = 0; i < articulos.length; i++) {
+
+                    str += '<tr>' +
+                        '<td>' + articulos[i].tr_date + '</td>' +
+                        '<td>' + articulos[i].tr_site + '</td>' +
+                        '<td>' + articulos[i].tr_part + '</td>' +
+                        '<td>' + articulos[i].tr_type + '</td>' +
+                        '<td>' + articulos[i].tr_qty_chg + '</td>' +
+                        '<td>' + articulos[i].tr_userid + '</td>' +
+                        '</tr>';
+                }
+                $('#tbArt').html(str);
+
+            });
+
+    </script>
+</head>
+
+<body>
+
+    <center>
+        <div id="loading" class="container">
+            <img src="gisft.gif" />
+            <p> Please Wait</p>
+        </div>
+    </center>
+
+    <table id="tableArt" class="table table-dark">
+        <thead>
+            <tr>
+                <th>FECHA</th>
+                <th>Almacen</th>
+                <th>Articulo</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody id="tbArt">
+
+        </tbody>
+
+    </table>
+    </div>
+
+
+</body>
+
+</html>
