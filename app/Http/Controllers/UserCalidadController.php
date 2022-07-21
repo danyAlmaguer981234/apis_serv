@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\userCalidad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 class UserCalidadController extends Controller
 {
     /**
@@ -14,10 +15,16 @@ class UserCalidadController extends Controller
      */
     public function index()
     {
-        $users = userCalidad::all();
-   
-        foreach($users as $p){
-            echo "Nombre: " . $p->usr_alias . " ". $p->usr_firstname . "</br>";
+        try {
+         
+           
+            $sql = "SELECT * FROM usr_mstr where usr_alias <> '' ";
+            $task = DB::connection("sqlsrv")->select($sql);
+           // $users = userCalidad::all();
+            return $task;
+
+        } catch (\Exception $e) {
+            die(" Exception: " . $e);
         }
     }
 
