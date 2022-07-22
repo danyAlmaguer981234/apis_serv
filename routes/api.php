@@ -29,3 +29,5 @@ Route::get('/clients', 'App\Http\Controllers\TaskController@getAllClient');
 Route::get('/task', 'App\Http\Controllers\TaskController@getArt');
 Route::get('/task', 'App\Http\Controllers\TaskController@index');
 Route::POST('/task', 'App\Http\Controllers\TaskController@create');
+Route::POST('/taskU', 'App\Http\Controllers\TaskController@updateAdd');
+Route::POST('/deleted', 'App\Http\Controllers\TaskController@destroy');

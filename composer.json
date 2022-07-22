@@ -11,7 +11,8 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
-        "yajra/laravel-oci8": "X"
+        "yajra/laravel-oci8": "X",
+        "zircote/swagger-php": "^4.4"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
