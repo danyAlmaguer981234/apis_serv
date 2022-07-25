@@ -123,6 +123,22 @@ return [
                 'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
                 'dynamic'        => [],
             ],
+            'oracle2' => [
+                'driver'         => 'oracle',
+                'tns'            => env('DB_TNS', ''),
+                'host'           => env('DB_HOST_3', '10.4.1.1'),
+                'port'           => env('DB_PORT_3', '1521'),
+                'database'       => env('DB_DATABASE_3', 'qad'),
+                'service_name'   => env('DB_SERVICENAME_3', 'qadsc'),
+                'username'       => env('DB_USERNAME_3', 'qad'),
+                'password'       => env('DB_PASSWORD_3', 'QAD'),
+                'charset'        => env('DB_CHARSET', 'AL32UTF8'),
+                'prefix'         => env('DB_PREFIX', ''),
+                'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
+                'server_version' => env('DB_SERVER_VERSION', '11g'),
+                'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
+                'dynamic'        => [],
+            ],
 
     ],
     

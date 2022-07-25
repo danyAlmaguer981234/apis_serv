@@ -143,7 +143,464 @@ class TaskController extends Controller
 
 
 
+public function Chart(Request $request){
 
+    try {
+        $sql = "
+        SELECT *
+          FROM (SELECT f.FE_TRANSACCION,
+                       NVL (f.TOTAL_CN_CONV, 0) TOTAL_CN_CONV,
+                       NVL (f.CN_ORDENADA, 0) CN_ORDENADA,
+                       NVL (f.CUMPLIMIENTO, 0) CUMPLIMIENTO,
+                       NVL (G.TOTAL_MATSEG, 0) TOTAL_MATSEG,
+                       NVL (g.TOTAL_MATTER, 0) TOTAL_MATTER,
+                       NVL (f.TOTAL_CN_DESP, 0) TOTAL_CN_DESP,
+                       NVL (f.TOTAL_FO_MTS, 0) TOTAL_FO_MTS
+                  FROM    (SELECT TO_CHAR (b.FE_TRANSACCION, 'dd/mm/yyyy')
+                                     FE_TRANSACCION,
+                                  a.TOTAL_CN_CONV,
+                                  b.CN_ORDENADA,
+                                  0 CUMPLIMIENTO,
+                                  A.TOTAL_CN_DESP,
+                                  A.TOTAL_FO_MTS
+                             FROM (  SELECT FE_TRANSACCION,
+                                            ROUND (SUM (CN_TRANSACCION_CONV), 2)
+                                               TOTAL_CN_CONV,
+                                            ROUND (SUM (CN_DESPERDICIO_CONV), 2)
+                                               TOTAL_CN_DESP,
+                                            ROUND (SUM (FO_MTS), 2) TOTAL_FO_MTS
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CN_TRANSACCION_CONV,
+                                                    CN_DESPERDICIO_CONV,
+                                                    CASE
+                                                       WHEN CL_UM = 'PZ'
+                                                       THEN
+                                                          CN_TRANSACCION_PZ * MTS
+                                                       ELSE
+                                                          CN_REAL * MTS
+                                                    END
+                                                       FO_MTS
+                                               FROM (SELECT FE_TRANSACCION,
+                                                            CASE
+                                                               WHEN fnisnumeric (
+                                                                       SUBSTR (
+                                                                          CL_PRODUCTO,
+                                                                          10,
+                                                                          4)) = 1
+                                                               THEN
+                                                                  TO_NUMBER (
+                                                                     SUBSTR (
+                                                                        CL_PRODUCTO,
+                                                                        10,
+                                                                        4))
+                                                                  / 10
+                                                                  * 0.0254
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               MTS,
+                                                            CASE
+                                                               WHEN UPPER (CL_USUARIO) LIKE
+                                                                       UPPER ('$request->maquina%')
+                                                               THEN
+                                                                  CN_TRANSACCION_CONV
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               CN_TRANSACCION_CONV,
+                                                            CN_TRANSACCION_PZ,
+                                                            CN_REAL,
+                                                            CN_DESPERDICIO_CONV,
+                                                            CL_UM
+                                                       FROM IC_D_WO_##_QAD
+                                                      WHERE CL_MAQUINA = '$request->maquina'
+                                                            AND CL_TIPO_TRANSACC =
+                                                                   'RCT-WO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'PRO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'SEG'
+                                                            AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                          '01/07/2022',
+                                                                                          'DD/MM/YYYY')
+                                                                                   AND TO_DATE (
+                                                                                          '23/07/2022',
+                                                                                          'DD/MM/YYYY')))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION) a,
+                                  (  SELECT xxprbg_date FE_TRANSACCION,
+                                            xxprbg_qty CN_ORDENADA
+                                       FROM qad.xxprbg_hist
+                                      WHERE UPPER (xxprbg_mch) = '$request->maquina'
+                                            AND xxprbg_date BETWEEN TO_DATE (
+                                                                       '01/07/2022',
+                                                                       'DD/MM/YYYY')
+                                                                AND TO_DATE (
+                                                                       '23/07/2022',
+                                                                       'DD/MM/YYYY')
+                                   ORDER BY xxprbg_date) b
+                            WHERE a.FE_TRANSACCION(+) = b.FE_TRANSACCION) f
+                       JOIN
+                          (SELECT FE_TRANSACCION, TOTAL_MATSEG, TOTAL_MATTER
+                             FROM (  SELECT TO_CHAR (FE_TRANSACCION, 'dd/mm/yyyy')
+                                               FE_TRANSACCION,
+                                            ROUND (SUM (MATSEG), 2) TOTAL_MATSEG,
+                                            ROUND (SUM (MATTER), 2) TOTAL_MATTER
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC2'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATSEG,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC3'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATTER
+                                               FROM IC_D_WO_##_QAD
+                                              WHERE CL_MAQUINA = '$request->maquina'
+                                                    AND CL_TIPO_TRANSACC = 'RCT-WO'
+                                                    AND CL_GRUPO_PRODUCTO IN
+                                                           ('PRO', 'SEG')  /*= 'PRO'*/
+                                                    AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                  '01/07/2022',
+                                                                                  'DD/MM/YYYY')
+                                                                           AND TO_DATE (
+                                                                                  '23/07/2022',
+                                                                                  'DD/MM/YYYY'))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION)) g
+                       ON f.FE_TRANSACCION = g.FE_TRANSACCION(+))
+        UNION
+        SELECT *
+          FROM (SELECT f.FE_TRANSACCION,
+                       NVL (f.TOTAL_CN_CONV, 0) TOTAL_CN_CONV,
+                       NVL (f.CN_ORDENADA, 0) CN_ORDENADA,
+                       NVL (f.CUMPLIMIENTO, 0) CUMPLIMIENTO,
+                       NVL (G.TOTAL_MATSEG, 0) TOTAL_MATSEG,
+                       NVL (g.TOTAL_MATTER, 0) TOTAL_MATTER,
+                       NVL (f.TOTAL_CN_DESP, 0) TOTAL_CN_DESP,
+                       NVL (f.TOTAL_FO_MTS, 0) TOTAL_FO_MTS
+                  FROM    (SELECT TO_CHAR (a.FE_TRANSACCION, 'dd/mm/yyyy')
+                                     FE_TRANSACCION,
+                                  a.TOTAL_CN_CONV,
+                                  b.CN_ORDENADA,
+                                  0 CUMPLIMIENTO,
+                                  A.TOTAL_CN_DESP,
+                                  A.TOTAL_FO_MTS
+                             FROM (  SELECT FE_TRANSACCION,
+                                            ROUND (SUM (CN_TRANSACCION_CONV), 2)
+                                               TOTAL_CN_CONV,
+                                            ROUND (SUM (CN_DESPERDICIO_CONV), 2)
+                                               TOTAL_CN_DESP,
+                                            ROUND (SUM (FO_MTS), 2) TOTAL_FO_MTS
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CN_TRANSACCION_CONV,
+                                                    CN_DESPERDICIO_CONV,
+                                                    CASE
+                                                       WHEN CL_UM = 'PZ'
+                                                       THEN
+                                                          CN_TRANSACCION_PZ * MTS
+                                                       ELSE
+                                                          CN_REAL * MTS
+                                                    END
+                                                       FO_MTS
+                                               FROM (SELECT FE_TRANSACCION,
+                                                            CASE
+                                                               WHEN fnisnumeric (
+                                                                       SUBSTR (
+                                                                          CL_PRODUCTO,
+                                                                          10,
+                                                                          4)) = 1
+                                                               THEN
+                                                                  TO_NUMBER (
+                                                                     SUBSTR (
+                                                                        CL_PRODUCTO,
+                                                                        10,
+                                                                        4))
+                                                                  / 10
+                                                                  * 0.0254
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               MTS,
+                                                            CASE
+                                                               WHEN UPPER (CL_USUARIO) LIKE
+                                                                       UPPER ('$request->maquina%')
+                                                               THEN
+                                                                  CN_TRANSACCION_CONV
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               CN_TRANSACCION_CONV,
+                                                            CN_TRANSACCION_PZ,
+                                                            CN_REAL,
+                                                            CN_DESPERDICIO_CONV,
+                                                            CL_UM
+                                                       FROM IC_D_WO_##_QAD
+                                                      WHERE CL_MAQUINA = '$request->maquina'
+                                                            AND CL_TIPO_TRANSACC =
+                                                                   'RCT-WO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'PRO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'SEG'
+                                                            AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                          '01/07/2022',
+                                                                                          'DD/MM/YYYY')
+                                                                                   AND TO_DATE (
+                                                                                          '21/07/2022',
+                                                                                          'DD/MM/YYYY')))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION) a,
+                                  (  SELECT xxprbg_date FE_TRANSACCION,
+                                            xxprbg_qty CN_ORDENADA
+                                       FROM qad.xxprbg_hist
+                                      WHERE UPPER (xxprbg_mch) = '$request->maquina'
+                                            AND xxprbg_date BETWEEN TO_DATE (
+                                                                       '01/07/2022',
+                                                                       'DD/MM/YYYY')
+                                                                AND TO_DATE (
+                                                                       '21/07/2022',
+                                                                       'DD/MM/YYYY')
+                                   ORDER BY xxprbg_date) b
+                            WHERE a.FE_TRANSACCION = b.FE_TRANSACCION(+)) f
+                       JOIN
+                          (SELECT FE_TRANSACCION, TOTAL_MATSEG, TOTAL_MATTER
+                             FROM (  SELECT TO_CHAR (FE_TRANSACCION, 'dd/mm/yyyy')
+                                               FE_TRANSACCION,
+                                            ROUND (SUM (MATSEG), 2) TOTAL_MATSEG,
+                                            ROUND (SUM (MATTER), 2) TOTAL_MATTER
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC2'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATSEG,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC3'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATTER
+                                               FROM IC_D_WO_##_QAD
+                                              WHERE CL_MAQUINA = '$request->maquina'
+                                                    AND CL_TIPO_TRANSACC = 'RCT-WO'
+                                                    AND CL_GRUPO_PRODUCTO IN
+                                                           ('PRO', 'SEG')  /*= 'PRO'*/
+                                                    AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                  '01/07/2022',
+                                                                                  'DD/MM/YYYY')
+                                                                           AND TO_DATE (
+                                                                                  '21/07/2022',
+                                                                                  'DD/MM/YYYY'))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION)) g
+                       ON f.FE_TRANSACCION = g.FE_TRANSACCION(+))
+        union
+        SELECT *
+          FROM (SELECT CASE
+                          WHEN f.FE_TRANSACCION IS NULL THEN g.FE_TRANSACCION
+                          ELSE f.FE_TRANSACCION
+                       END
+                          FE_TRANSACCION,
+                       NVL (f.TOTAL_CN_CONV, 0) TOTAL_CN_CONV,
+                       NVL (f.CN_ORDENADA, 0) CN_ORDENADA,
+                       NVL (f.CUMPLIMIENTO, 0) CUMPLIMIENTO,
+                       NVL (G.TOTAL_MATSEG, 0) TOTAL_MATSEG,
+                       NVL (g.TOTAL_MATTER, 0) TOTAL_MATTER,
+                       NVL (f.TOTAL_CN_DESP, 0) TOTAL_CN_DESP,
+                       NVL (f.TOTAL_FO_MTS, 0) TOTAL_FO_MTS
+                  FROM    (SELECT TO_CHAR (b.FE_TRANSACCION, 'dd/mm/yyyy')
+                                     FE_TRANSACCION,
+                                  a.TOTAL_CN_CONV,
+                                  b.CN_ORDENADA,
+                                  0 CUMPLIMIENTO,
+                                  A.TOTAL_CN_DESP,
+                                  A.TOTAL_FO_MTS
+                             FROM (  SELECT FE_TRANSACCION,
+                                            ROUND (SUM (CN_TRANSACCION_CONV), 2)
+                                               TOTAL_CN_CONV,
+                                            ROUND (SUM (CN_DESPERDICIO_CONV), 2)
+                                               TOTAL_CN_DESP,
+                                            ROUND (SUM (FO_MTS), 2) TOTAL_FO_MTS
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CN_TRANSACCION_CONV,
+                                                    CN_DESPERDICIO_CONV,
+                                                    CASE
+                                                       WHEN CL_UM = 'PZ'
+                                                       THEN
+                                                          CN_TRANSACCION_PZ * MTS
+                                                       ELSE
+                                                          CN_REAL * MTS
+                                                    END
+                                                       FO_MTS
+                                               FROM (SELECT FE_TRANSACCION,
+                                                            CASE
+                                                               WHEN fnisnumeric (
+                                                                       SUBSTR (
+                                                                          CL_PRODUCTO,
+                                                                          10,
+                                                                          4)) = 1
+                                                               THEN
+                                                                  TO_NUMBER (
+                                                                     SUBSTR (
+                                                                        CL_PRODUCTO,
+                                                                        10,
+                                                                        4))
+                                                                  / 10
+                                                                  * 0.0254
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               MTS,
+                                                            CASE
+                                                               WHEN UPPER (CL_USUARIO) LIKE
+                                                                       UPPER ('$request->maquina%')
+                                                               THEN
+                                                                  CN_TRANSACCION_CONV
+                                                               ELSE
+                                                                  0
+                                                            END
+                                                               CN_TRANSACCION_CONV,
+                                                            CN_TRANSACCION_PZ,
+                                                            CN_REAL,
+                                                            CN_DESPERDICIO_CONV,
+                                                            CL_UM
+                                                       FROM IC_D_WO_##_QAD
+                                                      WHERE CL_MAQUINA = '$request->maquina'
+                                                            AND CL_TIPO_TRANSACC =
+                                                                   'RCT-WO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'PRO'
+                                                            AND CL_GRUPO_PRODUCTO <>
+                                                                   'SEG'
+                                                            AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                          '01/07/2022',
+                                                                                          'DD/MM/YYYY')
+                                                                                   AND TO_DATE (
+                                                                                          '23/07/2022',
+                                                                                          'DD/MM/YYYY')))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION) a,
+                                  (  SELECT xxprbg_date FE_TRANSACCION,
+                                            xxprbg_qty CN_ORDENADA
+                                       FROM qad.xxprbg_hist
+                                      WHERE UPPER (xxprbg_mch) = '$request->maquina'
+                                            AND xxprbg_date BETWEEN TO_DATE (
+                                                                       '01/07/2022',
+                                                                       'DD/MM/YYYY')
+                                                                AND TO_DATE (
+                                                                       '23/07/2022',
+                                                                       'DD/MM/YYYY')
+                                   ORDER BY xxprbg_date) b
+                            WHERE a.FE_TRANSACCION = b.FE_TRANSACCION) f
+                       JOIN
+                          (SELECT FE_TRANSACCION, TOTAL_MATSEG, TOTAL_MATTER
+                             FROM (  SELECT TO_CHAR (FE_TRANSACCION, 'dd/mm/yyyy')
+                                               FE_TRANSACCION,
+                                            ROUND (SUM (MATSEG), 2) TOTAL_MATSEG,
+                                            ROUND (SUM (MATTER), 2) TOTAL_MATTER
+                                       FROM (SELECT FE_TRANSACCION,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF2'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC2'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATSEG,
+                                                    CASE
+                                                       WHEN    SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TG3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TF3'
+                                                            OR SUBSTR (CL_PRODUCTO,
+                                                                       0,
+                                                                       3) = 'TC3'
+                                                       THEN
+                                                          CN_TRANSACCION_CONV
+                                                       ELSE
+                                                          0
+                                                    END
+                                                       MATTER
+                                               FROM IC_D_WO_##_QAD
+                                              WHERE CL_MAQUINA = '$request->maquina'
+                                                    AND CL_TIPO_TRANSACC = 'RCT-WO'
+                                                    AND CL_GRUPO_PRODUCTO IN
+                                                           ('PRO', 'SEG')  /*= 'PRO'*/
+                                                    AND FE_TRANSACCION BETWEEN TO_DATE (
+                                                                                  '01/07/2022',
+                                                                                  'DD/MM/YYYY')
+                                                                           AND TO_DATE (
+                                                                                  '23/07/2022',
+                                                                                  'DD/MM/YYYY'))
+                                   GROUP BY FE_TRANSACCION
+                                   ORDER BY FE_TRANSACCION)) g
+                       ON f.FE_TRANSACCION(+) = g.FE_TRANSACCION)
+        
+        
+        
+        ";
+      $task = DB::connection("oracle2")->select($sql);
+        return response()->json($task);
+    } catch (\Exception $e) {
+        die(" Exception: " . $e);
+    }
+}
 
     /**
      * Remove the specified resource from storage.
