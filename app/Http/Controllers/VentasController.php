@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\userCalidad;
+use App\Models\ventas;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
-class UserCalidadController extends Controller
+class VentasController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,17 +14,7 @@ class UserCalidadController extends Controller
      */
     public function index()
     {
-        try {
-         
-           
-            $sql = "SELECT * FROM usr_mstr where usr_alias <> '' ";
-            $task = DB::connection("sqlsrv")->select($sql);
-           // $users = userCalidad::all();
-            return $task;
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e, ]);
-        }
+        //
     }
 
     /**
@@ -52,10 +41,10 @@ class UserCalidadController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\userCalidad  $userCalidad
+     * @param  \App\Models\ventas  $ventas
      * @return \Illuminate\Http\Response
      */
-    public function show(userCalidad $userCalidad)
+    public function show(ventas $ventas)
     {
         //
     }
@@ -63,10 +52,10 @@ class UserCalidadController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\userCalidad  $userCalidad
+     * @param  \App\Models\ventas  $ventas
      * @return \Illuminate\Http\Response
      */
-    public function edit(userCalidad $userCalidad)
+    public function edit(ventas $ventas)
     {
         //
     }
@@ -75,10 +64,10 @@ class UserCalidadController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\userCalidad  $userCalidad
+     * @param  \App\Models\ventas  $ventas
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, userCalidad $userCalidad)
+    public function update(Request $request, ventas $ventas)
     {
         //
     }
@@ -86,10 +75,10 @@ class UserCalidadController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\userCalidad  $userCalidad
+     * @param  \App\Models\ventas  $ventas
      * @return \Illuminate\Http\Response
      */
-    public function destroy(userCalidad $userCalidad)
+    public function destroy(ventas $ventas)
     {
         //
     }

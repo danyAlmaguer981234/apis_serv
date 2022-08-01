@@ -35,27 +35,13 @@
             $('#tableArt').DataTable($("#tableArt tr").click(function () {
 
                 $("#tbName").val($(this).find("td").eq(2).html());
-                $("#tbShortAlias").val($(this).find("td").eq(0).html());
-                $("#tbEmail").val($(this).find("td").eq(5).html());
+                $("#tbShortAlias").val($(this).find("td").eq(0).html())
                 $("#tbLastName").val($(this).find("td").eq(3).html());
-                $("#tbTitle").val($(this).find("td").eq(4).html());
+                $("#tbCliente").val($(this).find("td").eq(4).html());
                 $("#tbUsrAlias").val($(this).find("td").eq(1).html());
 
-                $("#btnEnviar").click(function () {
-                    var myString;
-                    arr1 = [];
-                    var myAux = 0;
-                    $('.selected').each(function () {
-                        myString = myString + $(this).find("td").eq(0).html() + "\n";
 
 
-                        // alert("Handler for .click() called." + $(this).find("td").eq(2).html() );
-                        myAux++;
-                    });
-                    $("#txtArea").val(myString);
-                    console.log(typeof (arr1));
-
-                })
             }));
 
 
@@ -63,7 +49,7 @@
 
         $.ajax({
             type: "GET",
-            url: "http://10.11.1.240:8000/api/clients",
+            url: "http://10.11.1.240:8000/api/getItems",
             async: true,
             dataType: "json",
             success: function (response) {
@@ -76,11 +62,12 @@
                 for (var i = 0; i < data.length; i++) {
 
                     str += '<tr>' +
-                        '<td>' + data[i].ad_addr + '</td>' +
-                        '<td>' + data[i].ad_name + '</td>' +
-                        '<td>' + data[i].ad_country + '</td>' +
-                        '<td>' + data[i].ad_state + '</td>' +
-                        '<td>' + data[i].ad_city + '</td>' +
+                        '<td>' + data[i].pt_part + '</td>' +
+                        '<td>' + data[i].pt_desc1 + data[i].pt_desc2 + '</td>' +
+                        '<td>' + data[i].pt_um + '</td>' +
+                        '<td>' + data[i].pid_amt + '</td>' +
+                        '<td>' + '<input type="text" class="form-control" name="tbCant" placeholder="Cantidad a Vender">' + '</td>' +
+
 
 
                         '</tr>';
@@ -89,10 +76,9 @@
 
             }).fail(function (data) {
                 alert("Algo salió mal" + data.error);
-                $(this).load('500error.php');
                 var errors = data.responseJSON;
 
-                
+                $('.body').load('div-2.html');
 
             });
 
@@ -114,28 +100,127 @@
                     'alias': alias
                 },//capturo array     
                 success: function (response) {
-                   
-                    $('.alert').alert()
+                    alert("Algo salió mal" + responses);
+                    console.log(response);
 
                 },
             }).done(
                 function (data, textStatus, jqXHR) {
                     alert("Algo salió mal" + responses);
-                    
+
                 }).fail(function (data) {
-                  
-                    $(this).load('500error.php');
-                  
+                    alert("Algo salió mal" + data.error);
+                    var errors = data.responseJSON;
 
                 });
         }
 
         $(document).ready(function () {
             $("#tableArt").css("display", "none");
-          
-           
-           
+            $('#tableDet').hide();
+
+            $.ajax({
+                type: "GET",
+                url: "http://10.11.1.240:8000/api/getClientByUser",
+                async: true,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                },
+            }).done(
+                function (data, textStatus, jqXHR) {
+                    $('#tableArt').show();
+                    var str = '';
+                    for (var i = 0; i < data.length; i++) {
+
+                        str += '<tr>' +
+                            '<td>' + data[i].usr_name + '</td>' +
+                            '<td>' + data[i].usr_alias + '</td>' +
+                            '<td>' + data[i].usr_firstname + '</td>' +
+                            '<td>' + data[i].usr_lastname + '</td>' +
+                            '<td>' + data[i].det_ad_add + '</td>' +
+                            '</tr>';
+                    }
+                    $('#tbArt').html(str);
+
+                }).fail(function (data) {
+                    alert("Algo salió mal" + data.error);
+                    var errors = data.responseJSON;
+
+                });
+
+
+
+            $("#divVentas").click(function () {
+                $('#body').load('d.html');
+            });
+
+            $("#btnEnviar").click(function () {
+                var myString = "";
+                var aux2, total = 0;
+                arr1 = [];
+                var myAux = 0;
+                var str = '';
+                $('.selected').each(function () {
+                    str += '<tr>' +
+                        '<td>' + $(this).find("td").eq(0).html() + '</td>' +
+                        '<td>' + $(this).find("td").eq(3).html() + '</td>' +
+                        '<td>' + $(this).find("td").find("input[name='tbCant']").val() + '</td>' +
+                        '<td>' + $(this).find("td").eq(3).html() * $(this).find("td").find("input[name='tbCant']").val() + '</td>' +
+                        '<td><button class="btn btn-danger btnborrar">borrar</button></td>' +
+                        '</tr>';
+                    // alert("Handler for .click() called." + $(this).find("td").eq(2).html() );
+                    myAux++;
+
+                    total = total + $(this).find("td").eq(3).html() * $(this).find("td").find("input[name='tbCant']").val()
+                });
+
+                 
+
+                $('#tbDet').html(str);
+                $("tfoot").remove();
+                str = '<tfoot> <tr>' +
+                    '<td COLSPAN="3"> TOTAL A PAGAR </td>' +
+                    '<td COLSPAN="3" id = "tdTotal">' + total + '</td>' +
+                    '</tr> </tfoot>';
+                    $('#tableDet').append(str);
+
+                calcular();
+                $('#tableDet').show();
+                console.log(typeof (arr1));
+
+            })
+
         });
+        $(document).on('click', '.btnborrar', function (event) {
+            event.preventDefault();
+            $(this).closest('tr').remove();
+            calcular();
+        });
+
+
+        function calcular(){
+           
+            var aux2, total = 0;
+            var str;
+            $('#tbDet tr').each(function () {
+                console.log( "Hola ");
+                total = total + $(this).find("td").eq(1).html() * $(this).find("td").eq(2).html()
+
+            });
+
+           alert(total);
+          $("#tdTotal").text(total);
+
+          if(total == 0){
+            $('#tableDet').hide();
+
+          }
+               
+
+
+        }
+
 
         $("#btnAceptar").click(function () {
 
@@ -152,47 +237,13 @@
             myInsertBD(arr1, $("#tbUsrAlias").val());
 
         });
-        $.ajax({
-            type: "GET",
-            url: "http://10.11.1.240:8000/api/users",
-            async: true,
-            dataType: "json",
-            success: function (response) {
-                console.log(response);
-              
-               // $('#body').load('500error.php');
-               // $("#Perror").val('HOLO');
-               // alert("HOLO")
-            },
-        }).done(
-            function (data, textStatus, jqXHR) {
-                $('#tableArt').show();
-                var str = '';
-                for (var i = 0; i < data.length; i++) {
-
-                    str += '<tr>' +
-                        '<td>' + data[i].usr_shortalias + '</td>' +
-                        '<td>' + data[i].usr_alias + '</td>' +
-                        '<td>' + data[i].usr_name + '</td>' +
-                        '<td>' + data[i].usr_lastname + '</td>' +
-                        '<td>' + data[i].usr_description + '</td>' +
-                        '<td>' + data[i].usr_email + '</td>' +
-
-                        '</tr>';
-                }
-                $('#tbArt').html(str);
-
-            }).fail(function (data) {
-              
-
-            });
 
 
 
     </script>
 </head>
 
-<body id="body">
+<body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">API SERVIACERO</a>
@@ -204,7 +255,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a id="divVentas" class="nav-link active" href="ventas.html" aria-current="page">Ventas</a>
+                        <a id="divVentas" class="nav-link active" aria-current="page" href="">Ventas</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Reporte de ventas</a>
@@ -220,7 +271,7 @@
     <div class="container">
         <form class="row g-3">
             <div class="col-6">
-                <label for="inputAddress" class="form-label">Nombre</label>
+                <label for="inputAddress" class="form-label">Display</label>
                 <input type="text" class="form-control" id="tbName" placeholder="1234 Main St">
             </div>
             <div class="col-6">
@@ -236,30 +287,42 @@
                 <input type="text" class="form-control" id="tbUsrAlias" placeholder="1234 Main St">
             </div>
             <div class="col-3">
-                <label for="inputAddress" class="form-label">Puesto</label>
-                <input type="text" class="form-control" id="tbTitle" placeholder="1234 Main St">
-            </div>
-
-            <div class="col-md-6">
-                <label for="inputEmail4" class="form-label">Email</label>
-                <input type="email" class="form-control" id="tbEmail">
-            </div>
-
-            <div class="col-md-4">
-                <label for="inputState" class="form-label">Clientes</label>
-                <textarea class="form-control" id="txtArea" name="w3review" rows="4" cols="50">
-                </textarea>
-
+                <label for="inputAddress" class="form-label">Cliente</label>
+                <input type="text" class="form-control" id="tbCliente" placeholder="1234 Main St">
             </div>
             <div class="col-2">
+                <label for="inputAddress" class="form-label">Agregar articulos</label>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
-                    Asignar Cliente
+                    Añadir Articulos
                 </button>
             </div>
+            <div class="col-3">
+                <label for="inputAddress" class="form-label">Total a Pagar</label>
+                <table id="tableDet" class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>ITEM</th>
+                            <th>PRECIO</th>
+
+                            <th>CANTIDAD</th>
+
+                            <th>SUBTOTAL</th>
+                            <th>ELIMINAR</th>
 
 
+                        </tr>
+                        <tr>
+                            <td class="col-3"></td>
+                        </tr>
+                    </thead>
+                    <tbody id="tbDet">
+
+                    </tbody>
+
+                </table>
+            </div>
             <div class="col-12">
-                <button id="btnAceptar"  class="btn btn-primary">Guardar</button>
+                <button id="btnAceptar" type="submit" class="btn btn-primary">Aceptar</button>
             </div>
             </ul>
 
@@ -278,15 +341,16 @@
             </div>
         </center>
 
+
         <table id="tableArt" class="table table-hover table-striped">
             <thead>
                 <tr>
-                    <th>shortalias</th>
-                    <th>Alian Confiable</th>
+                    <th>Display</th>
+                    <th>Alias Confiable</th>
                     <th>Nombre </th>
                     <th>Apellido</th>
-                    <th>Puesto</th>
-                    <th>EMAIL</th>
+                    <th>Cliente</th>
+
                 </tr>
             </thead>
             <tbody id="tbArt">
@@ -315,11 +379,11 @@
                     <table id="tableClient" class="table table-hover table-striped">
                         <thead>
                             <tr>
-                                <th>Clave</th>
-                                <th>Nombre Cliente</th>
-                                <th>Pais </th>
-                                <th>EDO</th>
-                                <th>Ciudad</th>
+                                <th>Articulo</th>
+                                <th>Descripción</th>
+                                <th>UM </th>
+                                <th>PRECIO</th>
+                                <th>Cantidad</th>
 
                             </tr>
                         </thead>
@@ -342,14 +406,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
+
+</body>
 
 </html>

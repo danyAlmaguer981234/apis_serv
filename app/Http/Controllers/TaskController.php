@@ -65,10 +65,11 @@ class TaskController extends Controller
     public function getAllClient()
     {
         try {
-
-            $sql = "SELECT * FROM ad_mstr where  UPPER(ad_type) = 'CUSTOMER' and rownum < 65 and ad_domain = 'SCO' order by AD_NAME ";
+          
+            $sql = "SELECT  '' otro, ad.* FROM ad_mstr ad where  UPPER(ad_type) = 'CUSTOMER' and rownum < 65 and ad_domain = 'SCO' order by AD_NAME ";
             $task = DB::connection("oracle")->select($sql);
 
+        
             return $task;
         } catch (\Exception $e) {
             die(" Exception: " . $e);
@@ -80,6 +81,32 @@ class TaskController extends Controller
         try {
 
             $sql = "SELECT * FROM ad_mstr where ad_addr = '$request->id' and UPPER(ad_type) = 'CUSTOMER'  and ad_domain = '$request->domain' order by AD_NAME";
+            $task = DB::connection("oracle")->select($sql);
+            return $task;
+        } catch (\Exception $e) {
+            die(" Exception: " . $e);
+        }
+    }
+
+    public function getClientByUser(Request $request)
+    {
+        try {
+
+            $sql = "SELECT usr_alias,usr_firstname, usr_lastname, usr_name, det_ad_add from users, det_user_add where det_usr_index= usr_alias ";
+            $task = DB::connection("sqlsrv2")->select($sql);
+            return $task;
+        } catch (\Exception $e) {
+            die(" Exception: " . $e);
+        }
+    }
+
+ 
+
+    public function getItems()
+    {
+        try {
+
+            $sql = "select * from pi_mstr, pt_mstr, pid_det where pt_part = pi_part_code and PI_LIST_ID = PID_LIST_ID and pi_curr = 'MN' and pi_um = 'PZ' ";
             $task = DB::connection("oracle")->select($sql);
             return $task;
         } catch (\Exception $e) {

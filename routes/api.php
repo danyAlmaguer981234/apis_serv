@@ -32,3 +32,5 @@ Route::POST('/task', 'App\Http\Controllers\TaskController@create');
 Route::POST('/taskU', 'App\Http\Controllers\TaskController@updateAdd');
 Route::POST('/deleted', 'App\Http\Controllers\TaskController@destroy');
 Route::get('/chart', 'App\Http\Controllers\TaskController@Chart');
+Route::get('/getClientByUser', 'App\Http\Controllers\TaskController@getClientByUser');
+Route::get('/getItems', 'App\Http\Controllers\TaskController@getItems');
