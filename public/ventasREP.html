@@ -17,7 +17,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script type="text/javascript">
         var arr1 = [];
         $(document).ajaxStart(function () {
@@ -81,12 +83,15 @@
 
 
         $(document).ready(function () {
-            $("#tableArt").css("display", "none");
+            $("#tableSO").css("display", "none");
+            $("#tbid").css("display", "none");
             $('#tableDet').hide();
+            $('#tableSO').hide();
+            document.getElementById('btnDelete').disabled = true;
 
             $.ajax({
                 type: "GET",
-                url: "http://10.11.1.240:8000/api/getClientByUser",
+                url: "http://10.11.1.240:8000/api/getSO",
                 async: true,
                 dataType: "json",
                 success: function (response) {
@@ -94,43 +99,92 @@
                 },
             }).done(
                 function (data, textStatus, jqXHR) {
-                    $('#tableArt').show();
+                    $('#tableSo').show();
+                    $("#tbid").val('0');
+
+
                     var str = '';
                     for (var i = 0; i < data.length; i++) {
 
                         str += '<tr>' +
-                            '<td>' + data[i].usr_name + '</td>' +
-                            '<td>' + data[i].usr_alias + '</td>' +
-                            '<td>' + data[i].usr_firstname + '</td>' +
-                            '<td>' + data[i].usr_lastname + '</td>' +
-                            '<td>' + data[i].det_ad_add + '</td>' +
+                            '<td>' + data[i].id_so + '</td>' +
+                            '<td>' + data[i].so_addr + '</td>' +
+                            '<td>' + data[i].so_vend + '</td>' +
+                            '<td>' + data[i].so_date + '</td>' +
+
                             '</tr>';
                     }
-                    $('#tbArt').html(str);
 
-                    $('#tableArt').DataTable($("#tableArt tr").click(function () {
+                    $('#tbSod').html(str);
+                    $('#tableSO').show();
 
+                    $('#tableSo').DataTable($("#tbSod tr").click(function () {
+
+                        $("#tbid").val($(this).find("td").eq(0).html());
+                        $("#tbCliente").val($(this).find("td").eq(1).html());
                         $("#tbName").val($(this).find("td").eq(2).html());
-                        $("#tbShortAlias").val($(this).find("td").eq(0).html())
-                        $("#tbLastName").val($(this).find("td").eq(3).html());
-                        $("#tbCliente").val($(this).find("td").eq(4).html());
-                        $("#tbUsrAlias").val($(this).find("td").eq(1).html());
+                        $("#tbFecha").val($(this).find("td").eq(3).html());
+
+                        var aux = $("#tbid").val();
+                        if (aux = !0) {
+                            document.getElementById('btnDelete').disabled = false;
+                        } else {
+                            document.getElementById('btnDelete').disabled = true;
+                        }
+                        $.ajax({
+                            type: "GET",
+                            url: "http://10.11.1.240:8000/api/getSObyID",
+                            async: true,
+                            data: { "idSo": $(this).find("td").eq(0).html() },
+                            dataType: "json",
+                            success: function (response) {
+                                console.log(response);
+                            },
+                        }).done(function (data2, textStatus, jqXHR) {
 
 
+                            var aux2, total = 0;
+                            var str2;
+
+                            for (var i = 0; i < data2.length; i++) {
+                                //alert('f' + data2[i].det_so_part )
+                                str2 += '<tr>' +
+                                    '<td>' + data2[i].det_so_part + '</td>' +
+                                    '<td>' + data2[i].det_so_price + '</td>' +
+                                    '<td>' + data2[i].det_so_qty + '</td>' +
+                                    '<td>' + data2[i].det_so_sub + '</td>' +
+
+                                    '</tr>';
+                                // alert("Handler for .click() called." + $(this).find("td").eq(2).html() );
+                                total = total + data2[i].det_so_sub;
+                            }
+                            if (total == 0) {
+                                $('#tableDet').hide();
+                            } else {
+                                $('#tableDet').show();
+                            }
+
+                            $('#tbDet').html(str2);
+
+                            $("tfoot").remove();
+                            str2 = '<tfoot> <tr>' +
+                                '<td COLSPAN="3"> TOTAL A PAGAR </td>' +
+                                '<td COLSPAN="3" id = "tdTotal">' + total + '</td>' +
+                                '</tr> </tfoot>';
+                            $('#tableDet').append(str2);
+                        });
 
                     }));
 
                 }).fail(function (data) {
-                   
+                    alert("Algo salió mal" + data.error);
                     var errors = data.responseJSON;
 
                 });
 
 
 
-            $("#divVentas").click(function () {
-                $('#body').load('d.html');
-            });
+
 
             $("#btnEnviar").click(function () {
                 var myString = "";
@@ -186,12 +240,11 @@
 
             });
 
-            alert(total);
+
             $("#tdTotal").text(total);
 
             if (total == 0) {
                 $('#tableDet').hide();
-
             }
 
 
@@ -200,48 +253,50 @@
 
 
         $(document).ready(function () {
-            $("#btnAceptar").click(function () {
+            $("#btnDelete").click(function () {
 
-                var myString;
-                var array = [];
-
-                var myAux = 0;
-                $('#tbDet tr').each(function () {
-
-
-                    array[myAux] = { "det_so_part": $(this).find("td").eq(0).html(), "det_so_price": $(this).find("td").eq(1).html(), "det_so_qty": $(this).find("td").eq(2).html(), "det_so_qty": $(this).find("td").eq(2).html(), "det_so_sub": $(this).find("td").eq(3).html() };
-
-
-
-                    myAux++;
-                });
-
-                console.log(array);
-
-                $.ajax({
-                    type: "POST",
-                    url: "http://10.11.1.240:8000/api/soAdd",
-                    async: true,
-                    dataType: "json",
-                    data: {
-                        'array': array,
-                        'vend': $("#tbUsrAlias").val(),
-                        'addr': $("#tbCliente").val(),
-                    },//capturo array     
-                    success: function (response) {
+                swal.fire({
+                    title: 'Quieres eliminar los cambios?',
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    denyButtonText: `Don't save`,
+                }).then((result) => {
+                    /* Read more about isConfirmed, isDenied below */
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            type: "POST",
+                            url: "http://10.11.1.240:8000/api/deleteSO",
+                            async: true,
+                            dataType: "json",
+                            data: {
+                                'id': $("#tbid").val(),
+                            },//capturo array     
+                            success: function (response) {
 
 
-                    },
-                }).done(
-                    function (data) {
-                        swal("Operación exitosa!", "El registro fue guardado exitosamente", "success");
+                            },
+                        }).done(
+                            function (data) {
+                               
+                                Swal.fire(
+                                    'Good job!',
+                                    'Eliminación Existosa!',
+                                    'success'
+                                )
 
-                    }).fail(function (data) {
+                            }).fail(function (data) {
 
 
-                        swal("Opss!", "hubo un error al momento de hacer la operación", "error");
+                                Swal.fire('Problemas con la operación', '', 'alert');
 
-                    });
+                            });
+
+
+                    } else if (result.isDenied) {
+                        Swal.fire('Cambios no realizados', '', 'info')
+                    }
+                })
 
             });
 
@@ -279,32 +334,22 @@
     <br>
     <div target="frame" class="container">
         <div class="row g-3">
+            <input type="text" class="form-control" id="tbid" placeholder="1234 Main St" hidden>
+
             <div class="col-6">
-                <label for="inputAddress" class="form-label">Display</label>
+                <label for="inputAddress" class="form-label">Vendedor</label>
                 <input type="text" class="form-control" id="tbName" placeholder="1234 Main St">
-            </div>
-            <div class="col-6">
-                <label for="inputAddress" class="form-label">Apellido</label>
-                <input type="text" class="form-control" id="tbLastName" placeholder="1234 Main St">
-            </div>
-            <div class="col-3">
-                <label for="inputAddress" class="form-label">Short Alias</label>
-                <input type="text" class="form-control" id="tbShortAlias" placeholder="1234 Main St">
-            </div>
-            <div class="col-3">
-                <label for="inputAddress" class="form-label">Alias Confiable</label>
-                <input type="text" class="form-control" id="tbUsrAlias" placeholder="1234 Main St">
             </div>
             <div class="col-3">
                 <label for="inputAddress" class="form-label">Cliente</label>
                 <input type="text" class="form-control" id="tbCliente" placeholder="1234 Main St">
             </div>
-            <div class="col-2">
-                <label for="inputAddress" class="form-label">Agregar articulos</label>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
-                    Añadir Articulos
-                </button>
+            <div class="col-3">
+                <label for="inputAddress" class="form-label">Fecha</label>
+                <input type="text" class="form-control" id="tbFecha" placeholder="1234 Main St">
             </div>
+
+
             <div class="col-3">
                 <label for="inputAddress" class="form-label">Total a Pagar</label>
                 <table id="tableDet" class="table table-hover table-striped">
@@ -316,7 +361,7 @@
                             <th>CANTIDAD</th>
 
                             <th>SUBTOTAL</th>
-                            <th>ELIMINAR</th>
+
 
 
                         </tr>
@@ -331,7 +376,7 @@
                 </table>
             </div>
             <div class="col-12">
-                <button id="btnAceptar" class="btn btn-primary">Hacer Compra</button>
+                <button id="btnDelete" class="btn btn-danger">Eliminar Registro</button>
             </div>
             </ul>
 
@@ -351,18 +396,17 @@
         </center>
 
 
-        <table id="tableArt" class="table table-hover table-striped">
+        <table id="tableSO" class="table table-hover table-striped">
             <thead>
                 <tr>
-                    <th>Display</th>
-                    <th>Alias Confiable</th>
-                    <th>Nombre </th>
-                    <th>Apellido</th>
+                    <th>ID VENTA</th>
                     <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Fecha venta</th>
 
                 </tr>
             </thead>
-            <tbody id="tbArt">
+            <tbody id="tbSod">
 
             </tbody>
 
@@ -417,5 +461,6 @@
     </div>
 
 </body>
+
 
 </html>

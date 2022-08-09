@@ -34,3 +34,8 @@ Route::POST('/deleted', 'App\Http\Controllers\TaskController@destroy');
 Route::get('/chart', 'App\Http\Controllers\TaskController@Chart');
 Route::get('/getClientByUser', 'App\Http\Controllers\TaskController@getClientByUser');
 Route::get('/getItems', 'App\Http\Controllers\TaskController@getItems');
+Route::POST('/sendMessage', 'App\Http\Controllers\TaskController@sendMessage');
+Route::POST('/soAdd', 'App\Http\Controllers\TaskController@soAdd');
+Route::POST('/deleteSO', 'App\Http\Controllers\TaskController@deleteSO');
+Route::get('/getSO', 'App\Http\Controllers\TaskController@getSO');
+Route::get('/getSObyID', 'App\Http\Controllers\TaskController@getSObyID');

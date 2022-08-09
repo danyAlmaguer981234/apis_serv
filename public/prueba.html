@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script type="text/javascript">
         var arr1 = [];
         $(document).ajaxStart(function () {
@@ -24,39 +25,11 @@
 
         }).ajaxStop(function () {
             $('#loading').hide();
-            $('#tableClient').DataTable({
-                select: {
-                    style: 'multi'
-                }
-            });
 
 
 
-            $('#tableArt').DataTable($("#tableArt tr").click(function () {
-
-                $("#tbName").val($(this).find("td").eq(2).html());
-                $("#tbShortAlias").val($(this).find("td").eq(0).html());
-                $("#tbEmail").val($(this).find("td").eq(5).html());
-                $("#tbLastName").val($(this).find("td").eq(3).html());
-                $("#tbTitle").val($(this).find("td").eq(4).html());
-                $("#tbUsrAlias").val($(this).find("td").eq(1).html());
-
-                $("#btnEnviar").click(function () {
-                    var myString;
-                    arr1 = [];
-                    var myAux = 0;
-                    $('.selected').each(function () {
-                        myString = myString + $(this).find("td").eq(0).html() + "\n";
 
 
-                        // alert("Handler for .click() called." + $(this).find("td").eq(2).html() );
-                        myAux++;
-                    });
-                    $("#txtArea").val(myString);
-                    console.log(typeof (arr1));
-
-                })
-            }));
 
 
         });
@@ -87,12 +60,18 @@
                 }
                 $('#tbClie').html(str);
 
+                $('#tableClient').DataTable({
+                    select: {
+                        style: 'multi'
+                    }
+                });
+
             }).fail(function (data) {
                 alert("Algo salió mal" + data.error);
                 $(this).load('500error.php');
                 var errors = data.responseJSON;
 
-                
+
 
             });
 
@@ -103,7 +82,7 @@
 
         function myInsertBD(array, alias) {
 
-
+            console.log(array);
             $.ajax({
                 type: "POST",
                 url: "http://10.11.1.240:8000/api/task",
@@ -112,33 +91,28 @@
                 data: {
                     'array': array,
                     'alias': alias
-                },//capturo array     
-                success: function (response) {
-                   
-                    $('.alert').alert()
-
-                },
+                }
             }).done(
-                function (data, textStatus, jqXHR) {
-                    alert("Algo salió mal" + responses);
-                    
+                function (data) {
+                    swal("Operación exitosa!", "El registro fue guardado", "success");
+
                 }).fail(function (data) {
-                  
-                    $(this).load('500error.php');
-                  
+
+                    swal("Operación exitosa!", "El registro fue guardado", "success");
+
 
                 });
         }
 
         $(document).ready(function () {
             $("#tableArt").css("display", "none");
-          
-           
-           
-        });
+
+
+
+        
 
         $("#btnAceptar").click(function () {
-
+           
             var myString;
             arr1 = [];
             var myAux = 0;
@@ -159,10 +133,10 @@
             dataType: "json",
             success: function (response) {
                 console.log(response);
-              
-               // $('#body').load('500error.php');
-               // $("#Perror").val('HOLO');
-               // alert("HOLO")
+
+                // $('#body').load('500error.php');
+                // $("#Perror").val('HOLO');
+                // alert("HOLO")
             },
         }).done(
             function (data, textStatus, jqXHR) {
@@ -181,12 +155,37 @@
                         '</tr>';
                 }
                 $('#tbArt').html(str);
+                $('#tableArt').DataTable($("#tableArt tr").click(function () {
+
+                    $("#tbName").val($(this).find("td").eq(2).html());
+                    $("#tbShortAlias").val($(this).find("td").eq(0).html());
+                    $("#tbEmail").val($(this).find("td").eq(5).html());
+                    $("#tbLastName").val($(this).find("td").eq(3).html());
+                    $("#tbTitle").val($(this).find("td").eq(4).html());
+                    $("#tbUsrAlias").val($(this).find("td").eq(1).html());
+
+                    $("#btnEnviar").click(function () {
+                        var myString;
+                        arr1 = [];
+                        var myAux = 0;
+                        $('.selected').each(function () {
+                            myString = myString + $(this).find("td").eq(0).html() + "\n";
+
+
+                            // alert("Handler for .click() called." + $(this).find("td").eq(2).html() );
+                            myAux++;
+                        });
+                        $("#txtArea").val(myString);
+                        console.log(typeof (arr1));
+
+                    })
+                }));
 
             }).fail(function (data) {
-              
+
 
             });
-
+        });
 
 
     </script>
@@ -217,8 +216,8 @@
         </div>
     </nav>
     <br>
-    <div class="container">
-        <form class="row g-3">
+    <div target="frame" class="container">
+        <div class="row g-3">
             <div class="col-6">
                 <label for="inputAddress" class="form-label">Nombre</label>
                 <input type="text" class="form-control" id="tbName" placeholder="1234 Main St">
@@ -257,15 +256,16 @@
                 </button>
             </div>
 
-
             <div class="col-12">
-                <button id="btnAceptar"  class="btn btn-primary">Guardar</button>
+                <button id="btnAceptar" class="btn btn-primary">Guardar</button>
             </div>
+
             </ul>
 
 
 
-        </form>
+        </div>
+
     </div>
     </br>
     <div class="container ">
@@ -342,14 +342,5 @@
             </div>
         </div>
     </div>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Holy guacamole!</strong> You should check in on some of those fields below.
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
 
 </html>

@@ -4,176 +4,251 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Task;
+use Facade\FlareClient\Http\Client as HttpClient;
 use Illuminate\Http\Request;
+use Twilio\Http\Client;
+
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
-     * @OA\Get(
-     *     path="/api/users",
-     *     summary="Mostrar usuarios",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Mostrar todos los usuarios."
-     *     ),
-     *     @OA\Response(
-     *         response="default",
-     *         description="Ha ocurrido un error."
-     *     )
-     * )
-     */
-    public function index()
-    {
+   /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+   /**
+    * @OA\Get(
+    *     path="/api/users",
+    *     summary="Mostrar usuarios",
+    *     @OA\Response(
+    *         response=200,
+    *         description="Mostrar todos los usuarios."
+    *     ),
+    *     @OA\Response(
+    *         response="default",
+    *         description="Ha ocurrido un error."
+    *     )
+    * )
+    */
+   public function index()
+   {
 
-        try {
+      try {
 
-            $sql = "SELECT * FROM tr_hist where tr_userid = 'dalmague' and tr_domain ='SCO'";
-            $task = DB::select($sql);
-            return $task;
-            return response()->json(['success' => 'Contact form submitted successfully']);
-        } catch (\Exception $e) {
-        }
-    }
-    public function getArt(Request $request)
-    {
-        try {
+         $sql = "SELECT * FROM tr_hist where tr_userid = 'dalmague' and tr_domain ='SCO'";
+         $task = DB::select($sql);
+         return $task;
+         return response()->json(['success' => 'Contact form submitted successfully']);
+      } catch (\Exception $e) {
+      }
+   }
+   public function getArt(Request $request)
+   {
+      try {
 
-            $sql = "SELECT * FROM tr_hist where tr_part = '$request->id' and tr_domain = '$request->domain' order by tr_date desc";
-            $task = DB::select($sql);
-            return $task;
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
-    public function getArtUbi(Request $request)
-    {
-        try {
+         $sql = "SELECT * FROM tr_hist where tr_part = '$request->id' and tr_domain = '$request->domain' order by tr_date desc";
+         $task = DB::select($sql);
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function getArtUbi(Request $request)
+   {
+      try {
 
-            $sql = "SELECT * FROM ld_det where ld_part = '$request->id' and ld_domain = '$request->domain'order by ld_date desc";
-            $task = DB::select($sql);
-            echo json_encode($task);
-            /* return $task;*/
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
-    public function getAllClient()
-    {
-        try {
-          
-            $sql = "SELECT  '' otro, ad.* FROM ad_mstr ad where  UPPER(ad_type) = 'CUSTOMER' and rownum < 65 and ad_domain = 'SCO' order by AD_NAME ";
-            $task = DB::connection("oracle")->select($sql);
+         $sql = "SELECT * FROM ld_det where ld_part = '$request->id' and ld_domain = '$request->domain'order by ld_date desc";
+         $task = DB::select($sql);
+         echo json_encode($task);
+         /* return $task;*/
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function getAllClient()
+   {
+      try {
 
-        
-            return $task;
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+         $sql = "SELECT  '' otro, ad.* FROM ad_mstr ad where  UPPER(ad_type) = 'CUSTOMER' and rownum < 65 and ad_domain = 'SCO' order by AD_NAME ";
+         $task = DB::connection("oracle")->select($sql);
 
-    public function getClient(Request $request)
-    {
-        try {
 
-            $sql = "SELECT * FROM ad_mstr where ad_addr = '$request->id' and UPPER(ad_type) = 'CUSTOMER'  and ad_domain = '$request->domain' order by AD_NAME";
-            $task = DB::connection("oracle")->select($sql);
-            return $task;
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
-    public function getClientByUser(Request $request)
-    {
-        try {
+   public function getClient(Request $request)
+   {
+      try {
 
-            $sql = "SELECT usr_alias,usr_firstname, usr_lastname, usr_name, det_ad_add from users, det_user_add where det_usr_index= usr_alias ";
-            $task = DB::connection("sqlsrv2")->select($sql);
-            return $task;
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+         $sql = "SELECT * FROM ad_mstr where ad_addr = '$request->id' and UPPER(ad_type) = 'CUSTOMER'  and ad_domain = '$request->domain' order by AD_NAME";
+         $task = DB::connection("oracle")->select($sql);
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
+   public function getClientByUser(Request $request)
+   {
+      try {
+
+         $sql = "SELECT usr_alias,usr_firstname, usr_lastname, usr_name, det_ad_add from users, det_user_add where det_usr_index= usr_alias ";
+         $task = DB::connection("sqlsrv2")->select($sql);
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+
+
+
+   public function getSO()
+   {
+      try {
+
+
+         
  
+         $sql = "select * from so_mstr1 order by so_date";
+         $task = DB::connection("sqlsrv2")->select($sql);
+        
+           return response()->json($task);
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function getSObyID(Request $request)
+   {
+      try {
+ 
+         $sql = "select det_so_part, det_so_price, det_so_qty, det_so_sub from det_sod where det_so_nbr = '$request->idSo' ";
+         $task = DB::connection("sqlsrv2")->select($sql);
+        
+           return response()->json($task);
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function getItems()
+   {
+      try {
 
-    public function getItems()
-    {
-        try {
+         $sql = "select * from pi_mstr, pt_mstr, pid_det where pt_part = pi_part_code and PI_LIST_ID = PID_LIST_ID and pi_curr = 'MN' and pi_um = 'PZ' ";
+         $task = DB::connection("oracle")->select($sql);
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
-            $sql = "select * from pi_mstr, pt_mstr, pid_det where pt_part = pi_part_code and PI_LIST_ID = PID_LIST_ID and pi_curr = 'MN' and pi_um = 'PZ' ";
-            $task = DB::connection("oracle")->select($sql);
-            return $task;
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+   public function saveSo()
+   {
+      try {
 
-    public function getWoMstr(Request $request)
-    {
-        try {
+         $sql = "select * from pi_mstr, pt_mstr, pid_det where pt_part = pi_part_code and PI_LIST_ID = PID_LIST_ID and pi_curr = 'MN' and pi_um = 'PZ' ";
+         $task = DB::connection("oracle")->select($sql);
+         return $task;
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
-            $sql = "SELECT * FROM wo_mstr, wod_det where wo_nbr = wod_nbr and wo_nbr = '$request->id' and wo_domain = '$request->domain' ";
-            $task = DB::select($sql);
+   public function getWoMstr(Request $request)
+   {
+      try {
 
-            foreach ($task as $p) {
-                echo "<table>";
-                echo "<tr>";
-                echo "<td>" . $p->wo_nbr . "</td>";
-                echo "<td>" . $p->wo_part . "</td>";
-                echo "<td>" . $p->wod_part . "</td>";
+         $sql = "SELECT * FROM wo_mstr, wod_det where wo_nbr = wod_nbr and wo_nbr = '$request->id' and wo_domain = '$request->domain' ";
+         $task = DB::select($sql);
 
-
-                echo "<tr>";
-                echo "</table>";
-            }
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(Request $request)
-    {
-        try {
-
-            foreach ($request->array as $e) {
-                echo "<br>" . $e;
-
-                DB::connection("sqlsrv2")->insert('insert into det_user_add(det_usr_index,det_ad_add) values (?, ?)', [$request->alias, $e]);
-            }
-            return response()->json('Registro Exitoso');
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
-    public function updateAdd(Request $request)
-    {
-        try {
-
-            DB::connection("sqlsrv2")->update("update det_user_add set det_ad_add='$request->addr' where id_det= '$request->id'");
-
-            return response()->json('Operación Exitosa');
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+         foreach ($task as $p) {
+            echo "<table>";
+            echo "<tr>";
+            echo "<td>" . $p->wo_nbr . "</td>";
+            echo "<td>" . $p->wo_part . "</td>";
+            echo "<td>" . $p->wod_part . "</td>";
 
 
+            echo "<tr>";
+            echo "</table>";
+         }
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
-public function Chart(Request $request){
+   /**
+    * Show the form for creating a new resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+   public function create(Request $request)
+   {
+      try {
 
-    try {
-        $sql = "
+         foreach ($request->array as $e) {
+         
+
+            DB::connection("sqlsrv2")->insert('insert into det_user_add(det_usr_index,det_ad_add) values (?, ?)', [$request->alias, $e]);
+         }
+         return response()->json('Registro Exitoso');
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function updateAdd(Request $request)
+   {
+      try {
+
+         DB::connection("sqlsrv2")->update("update det_user_add set det_ad_add='$request->addr' where id_det= '$request->id'");
+
+         return response()->json('Operación Exitosa');
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+
+   public function soAdd(Request $request)
+   {
+      
+      try {
+       
+         $fechaActual = date('d/m/y'); 
+        // DB::connection("sqlsrv2")->insert('insert into so_mstr1(so_addr,so_vend) values (?,?)', [$request->addr, $request->vend]);
+         $id = DB::connection("sqlsrv2")->table('so_mstr1')->insertGetId([
+            'so_addr' => $request->addr,
+            'so_vend' => $request->vend
+           // 'so_date' => $fechaActual
+        ]);
+        
+        foreach ($request->array as $clave=>$value) {
+           
+
+         DB::connection("sqlsrv2")->table('det_sod')->insert([
+            'det_so_nbr' => $id,
+            'det_so_part' => $value['det_so_part'],
+            'det_so_price' => $value['det_so_price'],
+            'det_so_qty' => $value['det_so_qty'],
+            'det_so_sub' => $value['det_so_sub']
+         ]);
+      }
+        
+    
+      
+         return response()->json("operación exitosa");
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+  
+
+   public function Chart(Request $request)
+   {
+
+      try {
+         $sql = "
         SELECT *
           FROM (SELECT f.FE_TRANSACCION,
                        NVL (f.TOTAL_CN_CONV, 0) TOTAL_CN_CONV,
@@ -622,27 +697,72 @@ public function Chart(Request $request){
         
         
         ";
-      $task = DB::connection("oracle2")->select($sql);
-        return response()->json($task);
-    } catch (\Exception $e) {
-        die(" Exception: " . $e);
-    }
-}
+         $task = DB::connection("oracle2")->select($sql);
+         return response()->json($task);
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Task  $task
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Request $request)
-    {
-        try {
-            DB::connection("sqlsrv2")->delete('delete from det_user_add where id_det = ?', [$request->id]);
-            DB::connection("sqlsrv2")->commit();
-            return response()->json('Operación Exitosa');
-        } catch (\Exception $e) {
-            die(" Exception: " . $e);
-        }
-    }
+   /**
+    * Remove the specified resource from storage.
+    *
+    * @param  \App\Models\Task  $task
+    * @return \Illuminate\Http\Response
+    */
+   public function destroy(Request $request)
+   {
+      try {
+         DB::connection("sqlsrv2")->delete('delete from det_user_add where id_det = ?', [$request->id]);
+         DB::connection("sqlsrv2")->commit();
+         return response()->json('Operación Exitosa');
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+
+   public function deleteSO(Request $request)
+   {
+      try {
+
+        
+
+         
+        
+      
+
+         DB::connection("sqlsrv2")->delete('delete from so_mstr1 where id_so = ?', [$request->id]);
+        
+         DB::connection("sqlsrv2")->delete('delete from det_sod where det_so_nbr = ?', [$request->id]);
+
+         DB::connection("sqlsrv2")->commit();
+
+         return response()->json('Operación Exitosa');
+        
+      } catch (\Exception $e) {
+         die(" Exception: " . $e);
+      }
+   }
+   public function deleteSOD($id)
+   {
+      DB::connection("sqlsrv2")->delete('delete from det_sod where det_so_nbr = ?', [$id]);
+    
+   }
+
+
+
+   public function sendMessage(Request $request)
+   {
+      $account_sid = getenv("TWILIO_SID");
+      $auth_token = getenv("TWILIO_AUTH_TOKEN");
+      $twilio_number = getenv("TWILIO_NUMBER");
+      $client = New Client($account_sid, $auth_token);
+
+      $client->messages->create($request->receiverNumber, [
+         'from' => $twilio_number, 
+         'body' => $request->message]);
+
+         dd('SMS Sent Successfully.');
+     
+   }
 }
